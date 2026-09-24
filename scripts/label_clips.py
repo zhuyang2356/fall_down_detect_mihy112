@@ -1,6 +1,6 @@
 """在浏览器里给一段连续画面标动作。
 
-帧数可选 16、32、48、64。标签为摔倒、步行、蹲下、跳跃、坐下、其他。
+帧数可选 16、32、48、64。标签为摔倒、步行、蹲下、跳跃、坐下、其他、躺下。
 只把新标注写到新文件，不改原来的训练片段。
 """
 
@@ -28,19 +28,17 @@ ACTIONS = (
     ("jump", "跳跃"),
     ("sit", "坐下"),
     ("other", "其他"),
+    ("lie", "躺下"),
 )
 ACTION_IDS = {key for key, _name in ACTIONS}
 
 
 def window_starts(n_frames: int, length: int) -> list[tuple[int, int, bool]]:
-    """按所选帧数切段。向前移动一半，并把视频末尾单独补进最后一段。"""
+    """按所选帧数切段。相邻片段只重叠八分之一。"""
     if n_frames <= length:
         return [(0, n_frames, True)]
-    stride = length // 2
-    starts = list(range(0, n_frames - length + 1, stride))
-    tail = n_frames - length
-    if tail not in starts:
-        starts.append(tail)
+    stride = length - length // 8
+    starts = range(0, n_frames - length + 1, stride)
     return [(start, start + length, False) for start in starts]
 
 
@@ -147,7 +145,7 @@ class ClipLabeler:
             "dataset": self.dataset,
             "windows": list(WINDOW_CHOICES),
             "actions": [{"id": key, "name": name} for key, name in ACTIONS],
-            "rule": "一段画面选一个动作：摔倒、步行、蹲下、跳跃、坐下、其他。",
+            "rule": "一段画面选一个动作：摔倒、步行、蹲下、跳跃、坐下、其他、躺下。",
             "labels": self.annotations,
         }
         temp = self.ann_path.with_suffix(".json.tmp")
@@ -309,6 +307,7 @@ const ACTIONS = [
   ["jump", "跳跃", "4"],
   ["sit", "坐下", "5"],
   ["other", "其他", "6"],
+  ["lie", "躺下", "7"],
 ];
 const ACTION_NAME = Object.fromEntries(ACTIONS.map(([id, name]) => [id, name]));
 const SPLIT_NAME = {train: "训练集", val: "验证集", test: "测试集"};
