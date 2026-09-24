@@ -1,0 +1,48 @@
+cd ~/smartedge/model_ckpts/minhy112_fall_dataset
+mkdir -p data/raw/URFD_zips
+{
+  for i in $(seq -w 1 30); do
+    echo "https://fenix.ur.edu.pl/~mkepski/ds/data/fall-${i}-cam0-rgb.zip"
+    echo "  dir=$(pwd)/data/raw/URFD_zips"
+    echo "  out=fall-${i}-cam0-rgb.zip"
+  done
+  for i in $(seq -w 1 40); do
+    echo "https://fenix.ur.edu.pl/~mkepski/ds/data/adl-${i}-cam0-rgb.zip"
+    echo "  dir=$(pwd)/data/raw/URFD_zips"
+    echo "  out=adl-${i}-cam0-rgb.zip"
+  done
+} > /tmp/urfd_urls.txt
+aria2c -c -x 4 -s 4 -k 1M --max-tries=0 --retry-wait=10 --timeout=60 --auto-file-renaming=false -i /tmp/urfd_urls.txt
+
+cd ~/smartedge/model_ckpts/minhy112_fall_dataset
+for z in data/raw/URFD_zips/fall-*-cam0-rgb.zip; do
+  name=$(basename "$z" .zip)
+  mkdir -p "data/raw/URFD/fall/$name"
+  unzip -n "$z" -d "data/raw/URFD/fall/$name"
+done
+for z in data/raw/URFD_zips/adl-*-cam0-rgb.zip; do
+  name=$(basename "$z" .zip)
+  mkdir -p "data/raw/URFD/nonfall/$name"
+  unzip -n "$z" -d "data/raw/URFD/nonfall/$name"
+done
+
+cd ~/smartedge/model_ckpts/minhy112_fall_dataset
+mkdir -p data/raw/MCFD_zips
+{
+  for i in $(seq -w 1 24); do
+    echo "https://www.iro.umontreal.ca/~labimage/Dataset/chute-zip/chute${i}.zip"
+    echo "  dir=$(pwd)/data/raw/MCFD_zips"
+    echo "  out=chute${i}.zip"
+  done
+} > /tmp/mcfd_urls.txt
+aria2c -c -x 4 -s 4 -k 1M --max-tries=0 --retry-wait=10 --timeout=60 --auto-file-renaming=false -i /tmp/mcfd_urls.txt
+
+cd ~/smartedge/model_ckpts/minhy112_fall_dataset
+for i in $(seq -w 1 22); do
+  mkdir -p "data/raw/MCFD/fall/chute${i}"
+  unzip -n "data/raw/MCFD_zips/chute${i}.zip" -d "data/raw/MCFD/fall/chute${i}"
+done
+for i in 23 24; do
+  mkdir -p "data/raw/MCFD/nonfall/chute${i}"
+  unzip -n "data/raw/MCFD_zips/chute${i}.zip" -d "data/raw/MCFD/nonfall/chute${i}"
+done

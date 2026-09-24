@@ -1,0 +1,7 @@
+conda create -n fall python=3.10 -y
+conda activate fall
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+python scripts/extract_pose.py --dataset URFD
+python scripts/prepare_clips.py --dataset URFD
+python scripts/run_experiments.py --dataset URFD --methods lstm stgcn --epochs 2
